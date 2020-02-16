@@ -1,28 +1,50 @@
 var express = require("express");
 var router = express.Router();
 var checkIfAuthenticated = require("../middlewares/firebase-auth-middleware");
-// Load the AWS SDK for Node.js
-var AWS = require("aws-sdk");
-// Set the region
-AWS.config.update({ region: "us-east-1" });
+var docClient = require("../dynamodb-service");
 
-// Create the DynamoDB service object
-var docClient = new AWS.DynamoDB.DocumentClient();
-
-/* GET users listing. */
-router.get("/", function(req, res, next) {
-  res.send({ stuff: "respond with a resource" });
-});
-
-router.get("/:uid", checkIfAuthenticated, function(req, res, next) {
+function updateUser(uid, userParams, cb) {
   var params = {
     TableName: "BoxHandMaster",
-    KeyConditionExpression: "#PK = :pk",
-    ExpressionAttributeNames: {
-      "#PK": "PK"
+    Key: {
+      PK: uid,
+      SK: uid
     },
+    UpdateExpression: "set DisplayName = :d, Email = :e, Photo = :p",
     ExpressionAttributeValues: {
-      ":pk": req.params.uid
+      d: userParams.displayName,
+      e: userParams.email,
+      p: userParams.photoUrl
+    }
+  };
+
+  docClient.query(params, cb);
+}
+
+function updateBox(boxParams, cb) {
+  var params = {
+    TableName: "BoxHandMaster",
+    Key: {
+      PK: boxParams.uid,
+      SK: boxParams.uid
+    },
+    UpdateExpression: "set DisplayName = :d, Email = :e, Photo = :p",
+    ExpressionAttributeValues: {
+      d: boxParams.displayName,
+      e: boxParams.email,
+      p: boxParams.photoUrl
+    }
+  };
+
+  docClient.query(params, cb);
+}
+
+router.get("/", checkIfAuthenticated, function(req, res, next) {
+  var params = {
+    TableName: "BoxHandMaster",
+    KeyConditionExpression: "PK = :pk",
+    ExpressionAttributeValues: {
+      ":pk": req.authId
     }
   };
 
@@ -39,18 +61,21 @@ router.get("/:uid", checkIfAuthenticated, function(req, res, next) {
   });
 });
 
-router.post("/:uid/box/new", function(req, res, next) {
-  var params = {
-    TableName: "BoxHandMaster",
-    KeyConditionExpression: "#PK = :pk",
-    ExpressionAttributeNames: {
-      "#PK": "PK"
-    },
-    ExpressionAttributeValues: {
-      ":pk": req.params.uid
+router.post("/", checkIfAuthenticated, function(req, res, next) {
+  updateUser(req.authId, req.params, function(err, data) {
+    if (err) {
+      if (err.statusCode) {
+        res.status(err.statusCode).send(err.message);
+      } else {
+        res.status(500).send(err);
+      }
+    } else {
+      res.send({ data });
     }
-  };
+  });
+});
 
+router.post("/box/new", function(req, res, next) {
   docClient.query(params, function(err, data) {
     if (err) {
       res.status(err.statusCode).send(err.message);

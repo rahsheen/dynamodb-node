@@ -29,4 +29,4 @@ function checkIfAuthenticated(req, res, next) {
   });
 }
 
-module.exports = checkIfAuthenticated;
+export default checkIfAuthenticated;

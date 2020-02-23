@@ -12,11 +12,11 @@ function updateUser(uid, userParams, cb) {
       PK: uid,
       SK: uid
     },
-    UpdateExpression: "set DisplayName = :d, Email = :e, Photo = :p",
+    UpdateExpression: "set DisplayName = :d", //, Email = :e, Photo = :p",
     ExpressionAttributeValues: {
       ":d": userParams.displayName,
-      ":e": userParams.email,
-      ":p": userParams.photoURL
+      // ":e": userParams.email,
+      // ":p": userParams.photoURL
     },
     ReturnValues: "UPDATED_NEW"
   };
@@ -41,7 +41,7 @@ router.get("/", checkIfAuthenticated, function (req, res, next) {
         res.status(500).send(err);
       }
     } else {
-      res.send({ data });
+      res.send({ data: data.Items });
     }
   });
 });
@@ -49,7 +49,7 @@ router.get("/", checkIfAuthenticated, function (req, res, next) {
 router.post("/", checkIfAuthenticated, function (req, res, next) {
   updateUser(req.authId, req.body, function (err, data) {
     if (err) {
-      console.log(req.authId, err);
+      console.log(req.authId, err, req.body, req.params);
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);
       } else {

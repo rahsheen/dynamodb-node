@@ -1,4 +1,4 @@
-var admin = require("../firebase-service");
+import admin from "../firebase-service";
 
 function getAuthToken(req, res, next) {
   if (
@@ -13,15 +13,15 @@ function getAuthToken(req, res, next) {
 }
 
 function checkIfAuthenticated(req, res, next) {
-  getAuthToken(req, res, function() {
+  getAuthToken(req, res, function () {
     admin
       .auth()
       .verifyIdToken(req.authToken)
-      .then(function(userInfo) {
+      .then(function (userInfo) {
         req.authId = userInfo.uid;
         return next();
       })
-      .catch(function(e) {
+      .catch(function (e) {
         return res
           .status(401)
           .send({ error: "You are not authorized to make this request" });

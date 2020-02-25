@@ -1,8 +1,27 @@
 import express from "express";
 import checkIfAuthenticated from "../middlewares/firebase-auth-middleware";
 import docClient from "../dynamodb-service";
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
+
+function createBox(body: any) {
+  const { name, amount, frequency } = body;
+  const pk = uuidv4();
+
+  var params = {
+    TableName: 'BoxHandMaster',
+    Item: {
+      HashKey: pk,
+      DisplayName: name, HandAmount: amount, Frequency: frequency
+    }
+  };
+
+  docClient.put(params, function (err, data) {
+    if (err) console.log(err);
+    else console.log(data);
+  });
+}
 
 function updateBox(boxParams, cb) {
   var params = {
@@ -19,7 +38,7 @@ function updateBox(boxParams, cb) {
     }
   };
 
-  docClient.query(params, cb);
+  docClient.update(params, cb);
 }
 
 router.get("/:boxid", checkIfAuthenticated, function (req, res, next) {
@@ -62,13 +81,7 @@ router.post("/:boxid", checkIfAuthenticated, function (req, res, next) {
 });
 
 router.post("/new", function (req, res, next) {
-  docClient.query(req.params, function (err, data) {
-    if (err) {
-      res.status(err.statusCode).send(err.message);
-    } else {
-      res.send({ data });
-    }
-  });
+  createBox(req.body);
 });
 
 export default router;

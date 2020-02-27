@@ -1,7 +1,7 @@
 import express from "express";
 import checkIfAuthenticated from "../middlewares/firebase-auth-middleware";
 import docClient from "../dynamodb-service";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 const router = express.Router();
 
@@ -10,38 +10,40 @@ function createBox(body: any) {
   const pk = uuidv4();
 
   var params = {
-    TableName: 'BoxHandMaster',
+    TableName: "BoxHandMaster",
     Item: {
-      HashKey: pk,
-      DisplayName: name, HandAmount: amount, Frequency: frequency
+      hashKey: pk,
+      displayName: name,
+      handAmount: amount,
+      frequency: frequency
     }
   };
 
-  docClient.put(params, function (err, data) {
+  docClient.put(params, function(err, data) {
     if (err) console.log(err);
     else console.log(data);
   });
 }
 
-function updateBox(boxParams, cb) {
+function updateBox({ boxid, displayName, handAmount, frequency }, cb) {
   var params = {
     TableName: "BoxHandMaster",
     Key: {
-      PK: boxParams.boxid,
-      SK: boxParams.boxid
+      PK: boxid,
+      SK: boxid
     },
-    UpdateExpression: "set DisplayName = :d, HandAmount = :e, Frequency = :p",
+    UpdateExpression: "set displayName = :d, handAmount = :e, frequency = :p",
     ExpressionAttributeValues: {
-      d: boxParams.displayName,
-      e: boxParams.handAmount,
-      p: boxParams.frequency
+      d: displayName,
+      e: handAmount,
+      p: frequency
     }
   };
 
   docClient.update(params, cb);
 }
 
-router.get("/:boxid", checkIfAuthenticated, function (req, res, next) {
+router.get("/:boxid", checkIfAuthenticated, function(req, res, next) {
   var params = {
     TableName: "BoxHandMaster",
     IndexName: "BoxIndex",
@@ -53,7 +55,7 @@ router.get("/:boxid", checkIfAuthenticated, function (req, res, next) {
     ScanIndexForward: false
   };
 
-  docClient.query(params, function (err, data) {
+  docClient.query(params, function(err, data) {
     if (err) {
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);
@@ -66,8 +68,8 @@ router.get("/:boxid", checkIfAuthenticated, function (req, res, next) {
   });
 });
 
-router.post("/:boxid", checkIfAuthenticated, function (req, res, next) {
-  updateBox(req.params, function (err, data) {
+router.post("/:boxid", checkIfAuthenticated, function(req, res, next) {
+  updateBox(req.params, function(err, data) {
     if (err) {
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);
@@ -80,7 +82,7 @@ router.post("/:boxid", checkIfAuthenticated, function (req, res, next) {
   });
 });
 
-router.post("/new", function (req, res, next) {
+router.post("/new", function(req, res, next) {
   createBox(req.body);
 });
 

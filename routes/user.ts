@@ -5,16 +5,15 @@ import docClient from "../dynamodb-service";
 const router = express.Router();
 
 function updateUser(uid, userParams, cb) {
-  console.log("Updating with params", userParams);
   var params = {
     TableName: "BoxHandMaster",
     Key: {
       PK: uid,
       SK: uid
     },
-    UpdateExpression: "set DisplayName = :d", //, Email = :e, Photo = :p",
+    UpdateExpression: "set displayName = :d", //, Email = :e, Photo = :p",
     ExpressionAttributeValues: {
-      ":d": userParams.displayName,
+      ":d": userParams.displayName
       // ":e": userParams.email,
       // ":p": userParams.photoURL
     },
@@ -24,7 +23,7 @@ function updateUser(uid, userParams, cb) {
   docClient.update(params, cb);
 }
 
-router.get("/", checkIfAuthenticated, function (req, res, next) {
+router.get("/", checkIfAuthenticated, function(req, res, next) {
   var params = {
     TableName: "BoxHandMaster",
     KeyConditionExpression: "PK = :pk",
@@ -33,7 +32,7 @@ router.get("/", checkIfAuthenticated, function (req, res, next) {
     }
   };
 
-  docClient.query(params, function (err, data) {
+  docClient.query(params, function(err, data) {
     if (err) {
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);
@@ -46,17 +45,16 @@ router.get("/", checkIfAuthenticated, function (req, res, next) {
   });
 });
 
-router.post("/", checkIfAuthenticated, function (req, res, next) {
-  updateUser(req.authId, req.body, function (err, data) {
+router.post("/", checkIfAuthenticated, function(req, res, next) {
+  updateUser(req.authId, req.body, function(err, data) {
     if (err) {
-      console.log(req.authId, err, req.body, req.params);
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);
       } else {
         res.status(500).send(err);
       }
     } else {
-      res.send({ data });
+      res.send({ data: data.Items });
     }
   });
 });

@@ -24,7 +24,7 @@ function updateUser(uid, userParams, cb) {
 }
 
 router.get("/", checkIfAuthenticated, function(req, res, next) {
-  var params = {
+  const params = {
     TableName: "BoxHandMaster",
     KeyConditionExpression: "PK = :pk",
     ExpressionAttributeValues: {

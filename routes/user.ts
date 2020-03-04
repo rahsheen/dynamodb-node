@@ -4,23 +4,17 @@ import docClient from "../dynamodb-service";
 
 const router = express.Router();
 
-function updateUser(uid, userParams, cb) {
-  var params = {
+function updateUser(uid: string, userParams: object) {
+  const params = {
     TableName: "BoxHandMaster",
-    Key: {
+    Item: {
       PK: uid,
-      SK: uid
-    },
-    UpdateExpression: "set displayName = :d", //, Email = :e, Photo = :p",
-    ExpressionAttributeValues: {
-      ":d": userParams.displayName
-      // ":e": userParams.email,
-      // ":p": userParams.photoURL
-    },
-    ReturnValues: "UPDATED_NEW"
+      SK: uid,
+      ...userParams
+    }
   };
 
-  docClient.update(params, cb);
+  return docClient.put(params).promise();
 }
 
 router.get("/", checkIfAuthenticated, function(req, res, next) {
@@ -46,17 +40,15 @@ router.get("/", checkIfAuthenticated, function(req, res, next) {
 });
 
 router.post("/", checkIfAuthenticated, function(req, res, next) {
-  updateUser(req.authId, req.body, function(err, data) {
-    if (err) {
+  updateUser(req.authId, req.body)
+    .then(() => res.status(200))
+    .catch(err => {
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);
       } else {
         res.status(500).send(err);
       }
-    } else {
-      res.send({ data: data.Items });
-    }
-  });
+    });
 });
 
 export default router;

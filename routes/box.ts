@@ -9,8 +9,7 @@ const router = express.Router();
 
 type DocClientCb = (err: AWSError, data: DocumentClient.PutItemOutput) => void;
 
-async function createBox(body: any, userId: string) {
-  const { name, amount, frequency } = body;
+async function createBox(params: any, userId: string) {
   const boxId = uuidv4();
 
   const boxParams = {
@@ -18,9 +17,7 @@ async function createBox(body: any, userId: string) {
     Item: {
       PK: boxId,
       SK: boxId,
-      displayName: name,
-      handAmount: amount,
-      frequency: frequency
+      ...params
     }
   };
 
@@ -29,7 +26,8 @@ async function createBox(body: any, userId: string) {
     Item: {
       PK: userId,
       SK: boxId,
-      master: true
+      master: true,
+      name
     }
   };
 

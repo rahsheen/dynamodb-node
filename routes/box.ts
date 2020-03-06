@@ -26,14 +26,16 @@ async function createBox(params: any, userId: string) {
     Item: {
       PK: userId,
       SK: boxId,
-      master: true,
-      name
+      master: true
     }
   };
 
-  const box = await docClient.put(boxParams).promise();
-  const userBox = await docClient.put(userBoxParams).promise();
-  return { ...box.Attributes, ...userBox.Attributes };
+  await docClient.put(boxParams).promise();
+  await docClient.put(userBoxParams).promise();
+  return {
+    status: 200,
+    data: { ...boxParams.Item, ...userBoxParams.Item }
+  };
 }
 
 function updateBox(
@@ -98,11 +100,11 @@ router.post("/:boxid", checkIfAuthenticated, function(req, res, next) {
 
 router.post("/", checkIfAuthenticated, function(req, res, next) {
   createBox(req.body, req.authId)
-    .then(data => res.send({ data }))
+    .then(({status, data}) => res.status(status).send({ data }))
     .catch(e =>
       e.statusCode
         ? res.status(e.statusCode).send(e.message)
-        : res.status(500).send(e)
+        : res.status(500).send(JSON.stringify(e))
     );
 });
 

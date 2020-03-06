@@ -4,7 +4,7 @@ import docClient from "../dynamodb-service";
 
 const router = express.Router();
 
-function updateUser(uid: string, userParams: object) {
+async function updateUser(uid: string, userParams: object) {
   const params = {
     TableName: "BoxHandMaster",
     Item: {
@@ -14,7 +14,8 @@ function updateUser(uid: string, userParams: object) {
     }
   };
 
-  return docClient.put(params).promise();
+  await docClient.put(params).promise();
+  return { status: 200, data: JSON.stringify(params.Item) };
 }
 
 router.get("/", checkIfAuthenticated, function(req, res, next) {
@@ -41,7 +42,7 @@ router.get("/", checkIfAuthenticated, function(req, res, next) {
 
 router.post("/", checkIfAuthenticated, function(req, res, next) {
   updateUser(req.authId, req.body)
-    .then(() => res.status(200))
+    .then(({ status, data }) => res.status(status).send(data))
     .catch(err => {
       if (err.statusCode) {
         res.status(err.statusCode).send(err.message);

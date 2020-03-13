@@ -44,8 +44,7 @@ if (process.env.NODE_ENV !== "production") {
           { AttributeName: "PK", KeyType: "RANGE" } // Partition key
         ],
         Projection: {
-          // NonKeyAttributes: ["string"],
-          ProjectionType: "KEYS_ONLY"
+          ProjectionType: "ALL"
         },
         ProvisionedThroughput: {
           ReadCapacityUnits: 1,

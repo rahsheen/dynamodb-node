@@ -16,7 +16,7 @@ async function createBox(params: any, userId: string) {
     TableName: "BoxHandMaster",
     Item: {
       PK: boxId,
-      SK: boxId,
+      SK: `box-${boxId}`,
       ...params
     }
   };
@@ -25,8 +25,9 @@ async function createBox(params: any, userId: string) {
     TableName: "BoxHandMaster",
     Item: {
       PK: userId,
-      SK: boxId,
-      master: true
+      SK: `box-${boxId}`,
+      master: true,
+      name: params.name
     }
   };
 

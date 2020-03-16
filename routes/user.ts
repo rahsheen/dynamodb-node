@@ -9,7 +9,7 @@ async function updateUser(uid: string, userParams: object) {
     TableName: "BoxHandMaster",
     Item: {
       PK: uid,
-      SK: uid,
+      SK: `user-${uid}`,
       ...userParams
     }
   };
